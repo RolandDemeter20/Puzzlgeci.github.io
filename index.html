@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demeter - Illés Puzzle</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+        
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            opacity: 0.9;
+        }
+        
+        .game-area {
+            display: flex;
+            width: 100%;
+            gap: 20px;
+        }
+        
+        .control-panel {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            width: 350px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            flex-shrink: 0;
+        }
+        
+        .control-panel h2 {
+            margin-bottom: 20px;
+            text-align: center;
+            color: #FFD700;
+        }
+        
+        .upload-area {
+            border: 3px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 25px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .upload-area:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .upload-area i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            display: block;
+            color: #FFD700;
+        }
+        
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        label {
+            font-weight: bold;
+            color: #FFD700;
+        }
+        
+        select, button {
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        select {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        button {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #333;
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        .puzzle-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 600px;
+        }
+        
+        .puzzle-container {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        #puzzle-board {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 2px;
+            margin-bottom: 20px;
+            position: relative;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 10px;
+            min-height: 400px;
+        }
+        
+        .puzzle-slot {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .puzzle-slot.hovered {
+            background-color: rgba(255, 215, 0, 0.2);
+            border-color: #FFD700;
+        }
+        
+        .puzzle-slot.filled {
+            border: 2px solid transparent;
+            padding: 0;
+        }
+        
+        .puzzle-piece {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            cursor: grab;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            user-select: none;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            width: 100%;
+            height: 100%;
+        }
+        
+        .puzzle-piece:hover {
+            transform: scale(1.03);
+            border-color: rgba(255, 215, 0, 0.5);
+        }
+        
+        .puzzle-piece.dragging {
+            opacity: 0.8;
+            cursor: grabbing;
+            z-index: 100;
+            transform: rotate(3deg) scale(1.05);
+        }
+        
+        .pieces-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+        }
+        
+        .piece-item {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            cursor: grab;
+            transition: all 0.3s;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+        }
+        
+        .piece-item:hover {
+            transform: scale(1.05);
+            border-color: rgba(255, 215, 0, 0.5);
+        }
+        
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 20px;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 15px;
+            border-radius: 12px;
+        }
+        
+        .timer, .moves, .progress {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: bold;
+            text-align: center;
+            flex: 1;
+            margin: 0 5px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #FFD700, #FFA500);
+            border-radius: 5px;
+            width: 0%;
+            transition: width 0.5s;
+        }
+        
+        .message {
+            margin-top: 20px;
+            text-align: center;
+            font-weight: bold;
+            min-height: 24px;
+            padding: 15px;
+            border-radius: 10px;
+            width: 100%;
+        }
+        
+        .success-message {
+            background: linear-gradient(135deg, #4CAF50, #2E7D32);
+            color: white;
+            font-size: 1.3rem;
+            animation: pulse 1.5s infinite;
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+        }
+        
+        .preview-image {
+            width: 100%;
+            max-width: 200px;
+            border-radius: 10px;
+            margin: 10px auto;
+            display: block;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        .floating {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @media (max-width: 1100px) {
+            .game-area {
+                flex-direction: column;
+            }
+            
+            .control-panel {
+                width: 100%;
+                max-width: 100%;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .puzzle-piece {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Demeter - Illés Puzzle</h1>
+            <div class="subtitle">Húzd a puzzle darabokat a megfelelő helyükre!</div>
+        </header>
+        
+        <div class="game-area">
+            <div class="control-panel">
+                <h2>Játék Beállítások</h2>
+                <div class="upload-area" id="uploadArea">
+                    <i class="floating">🧩</i>
+                    <p>Kattints ide vagy húzd ide a képed</p>
+                    <input type="file" id="imageUpload" accept="image/*" style="display: none;">
+                </div>
+                
+                <img id="preview" class="preview-image" style="display:none;">
+                
+                <div class="controls">
+                    <div class="control-group">
+                        <label for="difficulty">Nehézségi szint:</label>
+                        <select id="difficulty">
+                            <option value="2">Könnyű (2x2)</option>
+                            <option value="3" selected>Közepes (3x3)</option>
+                            <option value="4">Nehéz (4x4)</option>
+                            <option value="100">Extrém (100x100)</option>
+                        </select>
+                    </div>
+                    
+                    <button id="startGame">Játék Indítása</button>
+                    <button id="hintButton">Segítség</button>
+                    <button id="resetGame">Újrakezdés</button>
+                </div>
+                
+                <div class="control-group">
+                    <label>Puzzle Darabok:</label>
+                    <div class="pieces-container" id="piecesContainer">
+                        <!-- Ide kerülnek a puzzle darabok -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="puzzle-section">
+                <div class="puzzle-container">
+                    <div id="puzzle-board"></div>
+                    
+                    <div class="game-info">
+                        <div class="timer">⏱️ Idő: <span id="timer">00:00</span></div>
+                        <div class="moves">🔢 Lépések: <span id="moves">0</span></div>
+                        <div class="progress">
+                            📊 Haladás: <span id="progress">0%</span>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progressFill"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="message" id="message"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elemek kiválasztása
+            const uploadArea = document.getElementById('uploadArea');
+            const imageUpload = document.getElementById('imageUpload');
+            const preview = document.getElementById('preview');
+            const difficultySelect = document.getElementById('difficulty');
+            const startGameBtn = document.getElementById('startGame');
+            const hintButton = document.getElementById('hintButton');
+            const resetGameBtn = document.getElementById('resetGame');
+            const puzzleBoard = document.getElementById('puzzle-board');
+            const piecesContainer = document.getElementById('piecesContainer');
+            const timerElement = document.getElementById('timer');
+            const movesElement = document.getElementById('moves');
+            const progressElement = document.getElementById('progress');
+            const progressFill = document.getElementById('progressFill');
+            const messageElement = document.getElementById('message');
+            
+            // Játék változók
+            let selectedImage = null;
+            let puzzleSize = 3;
+            let puzzlePieces = [];
+            let puzzleSlots = [];
+            let gameStarted = false;
+            let timerInterval = null;
+            let seconds = 0;
+            let moves = 0;
+            let correctPieces = 0;
+            let totalPieces = 0;
+            
+            // Kép feltöltés eseményei
+            uploadArea.addEventListener('click', () => {
+                imageUpload.click();
+            });
+            
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.style.background = 'rgba(255, 255, 255, 0.15)';
+                uploadArea.style.borderColor = 'rgba(255, 255, 255, 0.7)';
+            });
+            
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.style.background = 'rgba(255, 255, 255, 0.05)';
+                uploadArea.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+            });
+            
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.style.background = 'rgba(255, 255, 255, 0.05)';
+                uploadArea.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+                
+                if (e.dataTransfer.files.length > 0) {
+                    const file = e.dataTransfer.files[0];
+                    if (file.type.startsWith('image/')) {
+                        handleImageUpload(file);
+                    }
+                }
+            });
+            
+            imageUpload.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    handleImageUpload(e.target.files[0]);
+                }
+            });
+            
+            // Kép feltöltés feldolgozása
+            function handleImageUpload(file) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    selectedImage = e.target.result;
+                    uploadArea.innerHTML = '<i class="floating">✅</i><p>Kép sikeresen feltöltve!</p>';
+                    preview.src = selectedImage;
+                    preview.style.display = 'block';
+                    messageElement.textContent = "Készen állsz a játékra! Kattints a 'Játék Indítása' gombra.";
+                    messageElement.style.background = 'linear-gradient(135deg, #4CAF50, #2E7D32)';
+                };
+                
+                reader.readAsDataURL(file);
+            }
+            
+            // Játék indítása
+            startGameBtn.addEventListener('click', startGame);
+            
+            function startGame() {
+                if (!selectedImage) {
+                    messageElement.textContent = "Először tölts fel egy képet!";
+                    messageElement.style.background = 'linear-gradient(135deg, #f44336, #c62828)';
+                    return;
+                }
+                
+                // Játék állapotának beállítása
+                gameStarted = true;
+                puzzleSize = parseInt(difficultySelect.value);
+                
+                // Extrém mód esetén korlátozzuk a méretet a teljesítmény miatt
+                if (puzzleSize > 10) {
+                    puzzleSize = 10;
+                    messageElement.textContent = "Extrém mód esetén a méret 10x10-re korlátozva a teljesítmény érdekében.";
+                    messageElement.style.background = 'linear-gradient(135deg, #ff9800, #f57c00)';
+                    setTimeout(() => {
+                        messageElement.textContent = "";
+                        messageElement.style.background = '';
+                    }, 3000);
+                }
+                
+                moves = 0;
+                seconds = 0;
+                correctPieces = 0;
+                totalPieces = puzzleSize * puzzleSize;
+                movesElement.textContent = moves;
+                timerElement.textContent = "00:00";
+                updateProgress();
+                messageElement.textContent = "";
+                messageElement.className = "message";
+                
+                // Timer indítása
+                clearInterval(timerInterval);
+                timerInterval = setInterval(updateTimer, 1000);
+                
+                // Puzzle inicializálása
+                initializePuzzle();
+            }
+            
+            // Timer frissítése
+            function updateTimer() {
+                seconds++;
+                const minutes = Math.floor(seconds / 60);
+                const remainingSeconds = seconds % 60;
+                timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+            }
+            
+            // Haladás frissítése
+            function updateProgress() {
+                const progress = Math.round((correctPieces / totalPieces) * 100);
+                progressElement.textContent = `${progress}%`;
+                progressFill.style.width = `${progress}%`;
+            }
+            
+            // Puzzle inicializálása
+            function initializePuzzle() {
+                puzzleBoard.innerHTML = '';
+                piecesContainer.innerHTML = '';
+                
+                puzzleBoard.style.gridTemplateColumns = `repeat(${puzzleSize}, 1fr)`;
+                puzzleBoard.style.gridTemplateRows = `repeat(${puzzleSize}, 1fr)`;
+                
+                puzzlePieces = [];
+                puzzleSlots = [];
+                
+                // Slots létrehozása
+                for (let i = 0; i < totalPieces; i++) {
+                    const slot = document.createElement('div');
+                    slot.className = 'puzzle-slot';
+                    slot.dataset.index = i;
+                    puzzleBoard.appendChild(slot);
+                    puzzleSlots.push(slot);
+                }
+                
+                // Darabok létrehozása
+                for (let i = 0; i < totalPieces; i++) {
+                    const piece = document.createElement('div');
+                    piece.className = 'puzzle-piece';
+                    piece.dataset.correctIndex = i;
+                    piece.dataset.index = i;
+                    
+                    // Háttérkép beállítása
+                    const row = Math.floor(i / puzzleSize);
+                    const col = i % puzzleSize;
+                    
+                    piece.style.backgroundImage = `url(${selectedImage})`;
+                    piece.style.backgroundSize = `${puzzleSize * 100}% ${puzzleSize * 100}%`;
+                    piece.style.backgroundPosition = `${(col / (puzzleSize - 1)) * 100}% ${(row / (puzzleSize - 1)) * 100}%`;
+                    
+                    // Drag and drop események
+                    piece.setAttribute('draggable', 'true');
+                    piece.addEventListener('dragstart', handleDragStart);
+                    piece.addEventListener('dragend', handleDragEnd);
+                    
+                    // Másolat a darabok konténerbe
+                    const pieceCopy = piece.cloneNode(true);
+                    pieceCopy.classList.add('piece-item');
+                    pieceCopy.dataset.index = i;
+                    piecesContainer.appendChild(pieceCopy);
+                    
+                    puzzlePieces.push(piece);
+                }
+                
+                // Slot-ok eseményei
+                puzzleSlots.forEach(slot => {
+                    slot.addEventListener('dragover', handleDragOver);
+                    slot.addEventListener('dragenter', handleDragEnter);
+                    slot.addEventListener('dragleave', handleDragLeave);
+                    slot.addEventListener('drop', handleDrop);
+                });
+                
+                // Darabok konténer eseményei
+                document.querySelectorAll('.piece-item').forEach(piece => {
+                    piece.addEventListener('dragstart', handleDragStart);
+                    piece.addEventListener('dragend', handleDragEnd);
+                });
+            }
+            
+            // Drag and Drop eseménykezelők
+            function handleDragStart(e) {
+                e.dataTransfer.setData('text/plain', e.target.dataset.index);
+                setTimeout(() => {
+                    e.target.classList.add('dragging');
+                }, 0);
+            }
+            
+            function handleDragEnd(e) {
+                e.target.classList.remove('dragging');
+            }
+            
+            function handleDragOver(e) {
+                e.preventDefault();
+            }
+            
+            function handleDragEnter(e) {
+                e.preventDefault();
+                e.target.classList.add('hovered');
+            }
+            
+            function handleDragLeave(e) {
+                e.target.classList.remove('hovered');
+            }
+            
+            function handleDrop(e) {
+                e.preventDefault();
+                e.target.classList.remove('hovered');
+                
+                const pieceIndex = parseInt(e.dataTransfer.getData('text/plain'));
+                const slotIndex = parseInt(e.target.dataset.index);
+                const piece = puzzlePieces[pieceIndex];
+                const slot = puzzleSlots[slotIndex];
+                
+                // Ellenőrizzük, hogy helyes-e a darab
+                if (parseInt(piece.dataset.correctIndex) === slotIndex) {
+                    // Helyes darab
+                    slot.innerHTML = '';
+                    
+                    // Létrehozunk egy új darabot a slotba
+                    const newPiece = document.createElement('div');
+                    newPiece.className = 'puzzle-piece';
+                    newPiece.style.backgroundImage = `url(${selectedImage})`;
+                    newPiece.style.backgroundSize = `${puzzleSize * 100}% ${puzzleSize * 100}%`;
+                    
+                    const row = Math.floor(slotIndex / puzzleSize);
+                    const col = slotIndex % puzzleSize;
+                    newPiece.style.backgroundPosition = `${(col / (puzzleSize - 1)) * 100}% ${(row / (puzzleSize - 1)) * 100}%`;
+                    
+                    slot.appendChild(newPiece);
+                    slot.classList.add('filled');
+                    
+                    // Eltávolítjuk a darabot a konténerből
+                    const pieceItem = document.querySelector(`.piece-item[data-index="${pieceIndex}"]`);
+                    if (pieceItem) {
+                        pieceItem.style.display = 'none';
+                    }
+                    
+                    correctPieces++;
+                    moves++;
+                    movesElement.textContent = moves;
+                    updateProgress();
+                    
+                    // Ellenőrizzük, hogy teljesült-e a puzzle
+                    if (correctPieces === totalPieces) {
+                        clearInterval(timerInterval);
+                        messageElement.textContent = `🎉 Gratulálok! Megoldottad a puzzlet! 🎉 Idő: ${timerElement.textContent}, Lépések: ${moves}`;
+                        messageElement.className = "message success-message";
+                    } else {
+                        messageElement.textContent = "✓ Helyes! Jól haladsz!";
+                        messageElement.style.background = 'linear-gradient(135deg, #4CAF50, #2E7D32)';
+                        setTimeout(() => {
+                            messageElement.textContent = "";
+                            messageElement.style.background = '';
+                        }, 1500);
+                    }
+                } else {
+                    // Helytelen darab
+                    moves++;
+                    movesElement.textContent = moves;
+                    messageElement.textContent = "Próbáld újra! Ez a darab nem ide tartozik.";
+                    messageElement.style.background = 'linear-gradient(135deg, #ff9800, #f57c00)';
+                    setTimeout(() => {
+                        messageElement.textContent = "";
+                        messageElement.style.background = '';
+                    }, 2000);
+                }
+            }
+            
+            // Segítség gomb
+            hintButton.addEventListener('click', function() {
+                if (!gameStarted) return;
+                
+                // Megkeressük az első helytelenül elhelyezett darabot
+                for (let i = 0; i < puzzlePieces.length; i++) {
+                    const pieceItem = document.querySelector(`.piece-item[data-index="${i}"]`);
+                    if (pieceItem && pieceItem.style.display !== 'none') {
+                        // Kiemeljük a darabot
+                        pieceItem.style.boxShadow = '0 0 15px 5px #FFD700';
+                        pieceItem.style.border = '3px solid #FFD700';
+                        
+                        setTimeout(() => {
+                            pieceItem.style.boxShadow = '';
+                            pieceItem.style.border = '2px solid rgba(255, 255, 255, 0.2)';
+                        }, 2000);
+                        
+                        break;
+                    }
+                }
+                
+                messageElement.textContent = "Egy darab ki van emelve! Próbáld meg a helyére tenni.";
+                messageElement.style.background = 'linear-gradient(135deg, #2196F3, #0D47A1)';
+                setTimeout(() => {
+                    messageElement.textContent = "";
+                    messageElement.style.background = '';
+                }, 3000);
+            });
+            
+            // Játék újrakezdése
+            resetGameBtn.addEventListener('click', function() {
+                clearInterval(timerInterval);
+                gameStarted = false;
+                puzzleBoard.innerHTML = '';
+                piecesContainer.innerHTML = '';
+                messageElement.textContent = "";
+                messageElement.className = "message";
+                timerElement.textContent = "00:00";
+                movesElement.textContent = "0";
+                progressElement.textContent = "0%";
+                progressFill.style.width = "0%";
+                
+                // Visszaállítjuk a feltöltési területet
+                if (selectedImage) {
+                    uploadArea.innerHTML = '<i class="floating">✅</i><p>Kép sikeresen feltöltve!</p>';
+                } else {
+                    uploadArea.innerHTML = '<i class="floating">🧩</i><p>Kattints ide vagy húzd ide a képed</p>';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
