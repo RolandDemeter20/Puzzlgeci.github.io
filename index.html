@@ -627,21 +627,21 @@
                     piece.addEventListener('dragstart', handleDragStart);
                     piece.addEventListener('dragend', handleDragEnd);
                     
-                    // Extrém módban nem jelenítjük meg a darabokat a listában
-                    if (!isExtremeMode) {
-                        // Másolat a darabok konténerbe
-                        const pieceCopy = piece.cloneNode(true);
-                        pieceCopy.classList.add('piece-item');
-                        pieceCopy.dataset.index = i;
-                        piecesContainer.appendChild(pieceCopy);
-                    }
-                    
                     puzzlePieces.push(piece);
                 }
                 
                 // Extrém módban véletlenszerűen elhelyezzük a darabokat
                 if (isExtremeMode) {
                     shufflePieces();
+                } else {
+                    // Normál módban a darabok a konténerbe kerülnek
+                    for (let i = 0; i < puzzlePieces.length; i++) {
+                        const piece = puzzlePieces[i];
+                        const pieceCopy = piece.cloneNode(true);
+                        pieceCopy.classList.add('piece-item');
+                        pieceCopy.dataset.index = i;
+                        piecesContainer.appendChild(pieceCopy);
+                    }
                 }
                 
                 // Slot-ok eseményei
