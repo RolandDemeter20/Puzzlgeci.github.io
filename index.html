@@ -388,7 +388,7 @@
             <div class="control-panel">
                 <h2>Játék Beállítások</h2>
                 <div class="upload-area" id="uploadArea">
-                    <i class="floating">🧩</i>
+                    <i class="floating"></i>
                     <p>Kattints ide vagy húzd ide a képed</p>
                     <input type="file" id="imageUpload" accept="image/*" style="display: none;">
                 </div>
@@ -402,12 +402,13 @@
                             <option value="2">Könnyű (2x2)</option>
                             <option value="3" selected>Közepes (3x3)</option>
                             <option value="4">Nehéz (4x4)</option>
-                            <option value="100">Extrém (100x100)</option>
+                            <!-- 100x100 helyett 10x10 extrém mód -->
+                            <option value="10">Extrém (10x10)</option>
                         </select>
                     </div>
                     
                     <button id="startGame">Játék Indítása</button>
-                    <button id="hintButton">Segítség</button>
+                    <!-- Segítség gomb eltávolítva -->
                     <button id="resetGame">Újrakezdés</button>
                 </div>
                 
@@ -427,10 +428,10 @@
                     <div id="puzzle-board"></div>
                     
                     <div class="game-info">
-                        <div class="timer">⏱️ Idő: <span id="timer">00:00</span></div>
-                        <div class="moves">🔢 Lépések: <span id="moves">0</span></div>
+                        <div class="timer"> Idő: <span id="timer">00:00</span></div>
+                        <div class="moves"> Lépések: <span id="moves">0</span></div>
                         <div class="progress">
-                            📊 Haladás: <span id="progress">0%</span>
+                             Haladás: <span id="progress">0%</span>
                             <div class="progress-bar">
                                 <div class="progress-fill" id="progressFill"></div>
                             </div>
@@ -451,7 +452,6 @@
             const preview = document.getElementById('preview');
             const difficultySelect = document.getElementById('difficulty');
             const startGameBtn = document.getElementById('startGame');
-            const hintButton = document.getElementById('hintButton');
             const resetGameBtn = document.getElementById('resetGame');
             const puzzleBoard = document.getElementById('puzzle-board');
             const piecesContainer = document.getElementById('piecesContainer');
@@ -516,7 +516,7 @@
                 
                 reader.onload = function(e) {
                     selectedImage = e.target.result;
-                    uploadArea.innerHTML = '<i class="floating">✅</i><p>Kép sikeresen feltöltve!</p>';
+                    uploadArea.innerHTML = '<i class="floating"></i><p>Kép sikeresen feltöltve!</p>';
                     preview.src = selectedImage;
                     preview.style.display = 'block';
                     messageElement.textContent = "Készen állsz a játékra! Kattints a 'Játék Indítása' gombra.";
@@ -539,7 +539,7 @@
                 // Játék állapotának beállítása
                 gameStarted = true;
                 puzzleSize = parseInt(difficultySelect.value);
-                isExtremeMode = puzzleSize === 100;
+                isExtremeMode = puzzleSize === 10; // 10x10 extrém mód
                 
                 // Extrém mód figyelmeztetés
                 if (isExtremeMode) {
@@ -780,46 +780,6 @@
                     }, 2000);
                 }
             }
-            
-            // Segítség gomb
-            hintButton.addEventListener('click', function() {
-                if (!gameStarted) return;
-                
-                // Extrém módban nem működik a segítség
-                if (isExtremeMode) {
-                    messageElement.textContent = "Extrém módban nincs segítség!";
-                    messageElement.style.background = 'linear-gradient(135deg, #ff9800, #f57c00)';
-                    setTimeout(() => {
-                        messageElement.textContent = "";
-                        messageElement.style.background = '';
-                    }, 2000);
-                    return;
-                }
-                
-                // Megkeressük az első helytelenül elhelyezett darabot
-                for (let i = 0; i < puzzlePieces.length; i++) {
-                    const pieceItem = document.querySelector(`.piece-item[data-index="${i}"]`);
-                    if (pieceItem && pieceItem.style.display !== 'none') {
-                        // Kiemeljük a darabot
-                        pieceItem.style.boxShadow = '0 0 15px 5px #a8d0ff';
-                        pieceItem.style.border = '3px solid #a8d0ff';
-                        
-                        setTimeout(() => {
-                            pieceItem.style.boxShadow = '';
-                            pieceItem.style.border = '2px solid rgba(168, 208, 255, 0.4)';
-                        }, 2000);
-                        
-                        break;
-                    }
-                }
-                
-                messageElement.textContent = "Egy darab ki van emelve! Próbáld meg a helyére tenni.";
-                messageElement.style.background = 'linear-gradient(135deg, #2196F3, #0D47A1)';
-                setTimeout(() => {
-                    messageElement.textContent = "";
-                    messageElement.style.background = '';
-                }, 3000);
-            });
             
             // Játék újrakezdése
             resetGameBtn.addEventListener('click', function() {
