@@ -415,7 +415,7 @@
                 <div class="control-group">
                     <label>Puzzle Darabok:</label>
                     <div class="warning-message" id="warningMessage" style="display: none;">
-                        Extrém módban csak a puzzle tábla látható, a darabok nem jelennek meg a listában.
+                        Extrém módban a puzzle darabok kisebb méretben jelennek meg a listában.
                     </div>
                     <div class="pieces-container" id="piecesContainer">
                         <!-- Ide kerülnek a puzzle darabok -->
@@ -544,7 +544,7 @@
                 // Extrém mód figyelmeztetés
                 if (isExtremeMode) {
                     warningMessage.style.display = 'block';
-                    messageElement.textContent = "Extrém mód aktív! A puzzle darabok csak a táblán jelennek meg.";
+                    messageElement.textContent = "Extrém mód aktív! A puzzle darabok kisebb méretben jelennek meg a listában.";
                     messageElement.style.background = 'linear-gradient(135deg, #ff9800, #f57c00)';
                     setTimeout(() => {
                         messageElement.textContent = "";
@@ -595,6 +595,13 @@
                 puzzleBoard.style.gridTemplateColumns = `repeat(${puzzleSize}, 1fr)`;
                 puzzleBoard.style.gridTemplateRows = `repeat(${puzzleSize}, 1fr)`;
                 
+                // Extrém módban a darabok kisebbek a listában
+                if (isExtremeMode) {
+                    piecesContainer.style.gridTemplateColumns = 'repeat(auto-fill, minmax(40px, 1fr))';
+                } else {
+                    piecesContainer.style.gridTemplateColumns = 'repeat(auto-fill, minmax(60px, 1fr))';
+                }
+                
                 puzzlePieces = [];
                 puzzleSlots = [];
                 
@@ -628,20 +635,17 @@
                     piece.addEventListener('dragend', handleDragEnd);
                     
                     puzzlePieces.push(piece);
+                    
+                    // Darabok másolata a konténerbe (minden módban)
+                    const pieceCopy = piece.cloneNode(true);
+                    pieceCopy.classList.add('piece-item');
+                    pieceCopy.dataset.index = i;
+                    piecesContainer.appendChild(pieceCopy);
                 }
                 
-                // Extrém módban véletlenszerűen elhelyezzük a darabokat
+                // Extrém módban véletlenszerűen elhelyezzük a darabokat a táblán
                 if (isExtremeMode) {
                     shufflePieces();
-                } else {
-                    // Normál módban a darabok a konténerbe kerülnek
-                    for (let i = 0; i < puzzlePieces.length; i++) {
-                        const piece = puzzlePieces[i];
-                        const pieceCopy = piece.cloneNode(true);
-                        pieceCopy.classList.add('piece-item');
-                        pieceCopy.dataset.index = i;
-                        piecesContainer.appendChild(pieceCopy);
-                    }
                 }
                 
                 // Slot-ok eseményei
@@ -659,7 +663,7 @@
                 });
             }
             
-            // Extrém módban véletlenszerűen elhelyezi a darabokat
+            // Extrém módban véletlenszerűen elhelyezi a darabokat a táblán
             function shufflePieces() {
                 const slots = Array.from({length: totalPieces}, (_, i) => i);
                 
@@ -687,6 +691,12 @@
                     newPiece.setAttribute('draggable', 'true');
                     newPiece.addEventListener('dragstart', handleDragStart);
                     newPiece.addEventListener('dragend', handleDragEnd);
+                    
+                    // A listából eltávolítjuk a darabot
+                    const pieceItem = document.querySelector(`.piece-item[data-index="${i}"]`);
+                    if (pieceItem) {
+                        pieceItem.style.display = 'none';
+                    }
                 }
             }
             
@@ -742,12 +752,10 @@
                     slot.appendChild(newPiece);
                     slot.classList.add('filled');
                     
-                    // Eltávolítjuk a darabot a konténerből (ha nem extrém mód)
-                    if (!isExtremeMode) {
-                        const pieceItem = document.querySelector(`.piece-item[data-index="${pieceIndex}"]`);
-                        if (pieceItem) {
-                            pieceItem.style.display = 'none';
-                        }
+                    // Eltávolítjuk a darabot a konténerből
+                    const pieceItem = document.querySelector(`.piece-item[data-index="${pieceIndex}"]`);
+                    if (pieceItem) {
+                        pieceItem.style.display = 'none';
                     }
                     
                     correctPieces++;
